@@ -1,4 +1,17 @@
-Testado para Juniper e Huawei apenas. Outros vendors nao estão testados.
+Necessário rodar em Linux ou MacOS.
+
+Utiliza BGPQ4 e IPCALC para o funcionamento.
+
+Suporta os seguintes vendors:
+
+--Huawei
+--Juniper
+--Cisco
+--VyOS
+--RouterOS (Mikrotik)
+--Nokia
+
+Testado para Juniper, Huawei e Cisco. Outros vendors nao estão testados.
 
 apt update ; apt install git bgqp4 ipcalc -y
 
