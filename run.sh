@@ -12,8 +12,9 @@ generate_cisco_routes() {
 # Função para gerar rotas estáticas para Juniper
 generate_juniper_routes() {
     while read -r prefix; do
-        echo "set routing-options static route $prefix discard" >> $output_file
+        echo "set groups TWITTER-BLOCK routing-options static route $prefix discard" >> $output_file
     done < tmp_prefixes.txt
+    echo "set apply-groups TWITTER-BLOCK" >> $output_file
     
     sed -i 's\ip prefix-list prefix_list_13414 permit\\g' $output_file
 }
