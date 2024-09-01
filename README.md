@@ -13,7 +13,7 @@ Suporta os seguintes vendors:
 
 Testado para Juniper, Huawei e Cisco. Outros vendors nao estão testados.
 
-apt update ; apt install git bgqp4 ipcalc -y
+apt update ; apt install git bgpq4 ipcalc -y
 
 git clone https://github.com/andrediashexa/twitter-block.git
 
