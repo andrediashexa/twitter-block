@@ -18,28 +18,25 @@ detect_os() {
     esac
 }
 
-# Função para gerar rotas estáticas para Cisco
+# Funções para gerar rotas estáticas
 generate_cisco_routes() {
     while read -r prefix; do
         echo "ip route $prefix Null0" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para gerar rotas estáticas para Juniper
 generate_juniper_routes() {
     while read -r prefix; do
         echo "set groups TWITTER-BLOCK routing-options static route $prefix discard" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para gerar rotas estáticas para Nokia
 generate_nokia_routes() {
     while read -r prefix; do
         echo "configure router static-route $prefix blackhole" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para gerar rotas estáticas para Huawei
 generate_huawei_routes() {
     while read -r prefix; do
         echo "ip route-static $prefix NULL0" >> "$output_file"
@@ -47,62 +44,49 @@ generate_huawei_routes() {
     $SED_INLINE 's/\// /g' "$output_file"
 }
 
-# Função para gerar rotas estáticas para Mikrotik
 generate_mikrotik_routes() {
     while read -r prefix; do
         echo "/ip route add dst-address=$prefix type=blackhole" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para gerar rotas estáticas para VyOS
 generate_vyos_routes() {
     while read -r prefix; do
         echo "set protocols static route $prefix blackhole" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para adicionar comandos de remoção para Cisco
+# Funções para adicionar comandos de remoção
 add_cisco_removal() {
-    echo "# Commands to remove Cisco routes" >> "$output_file"
     while read -r prefix; do
         echo "no ip route $prefix Null0" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para adicionar comandos de remoção para Juniper
 add_juniper_removal() {
-    echo "# Commands to remove Juniper routes" >> "$output_file"
     echo "delete groups TWITTER-BLOCK" >> "$output_file"
     echo "delete apply-groups TWITTER-BLOCK" >> "$output_file"
 }
 
-# Função para adicionar comandos de remoção para Nokia
 add_nokia_removal() {
-    echo "# Commands to remove Nokia routes" >> "$output_file"
     while read -r prefix; do
         echo "no configure router static-route $prefix blackhole" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para adicionar comandos de remoção para Huawei
 add_huawei_removal() {
-    echo "# Commands to remove Huawei routes" >> "$output_file"
     while read -r prefix; do
         echo "undo ip route-static $prefix NULL0" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para adicionar comandos de remoção para Mikrotik
 add_mikrotik_removal() {
-    echo "# Commands to remove Mikrotik routes" >> "$output_file"
     while read -r prefix; do
         echo "/ip route remove dst-address=$prefix" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
-# Função para adicionar comandos de remoção para VyOS
 add_vyos_removal() {
-    echo "# Commands to remove VyOS routes" >> "$output_file"
     while read -r prefix; do
         echo "delete protocols static route $prefix" >> "$output_file"
     done < tmp_prefixes.txt
@@ -140,27 +124,21 @@ for asn in "${asns[@]}"; do
     case $choice in
         1)
             generate_cisco_routes
-            add_cisco_removal
             ;;
         2)
             generate_juniper_routes
-            # Adiciona o comando apply-groups ao final do arquivo no final
             ;;
         3)
             generate_nokia_routes
-            add_nokia_removal
             ;;
         4)
             generate_huawei_routes
-            add_huawei_removal
             ;;
         5)
             generate_mikrotik_routes
-            add_mikrotik_removal
             ;;
         6)
             generate_vyos_routes
-            add_vyos_removal
             ;;
         *)
             echo "Opção inválida!"
@@ -176,11 +154,54 @@ for asn in "${asns[@]}"; do
     rm -f tmp_prefixes.txt
 done
 
-# Adiciona o apply-groups para Juniper no final do arquivo, se necessário
-if [ "$choice" -eq 2 ]; then
-    echo "set apply-groups TWITTER-BLOCK" >> "$output_file"
-    add_juniper_removal
-fi
+# Adiciona os comandos de remoção ao final do arquivo
+case $choice in
+    1)
+        echo "# Commands to remove Cisco routes" >> "$output_file"
+        for asn in "${asns[@]}"; do
+            bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+            add_cisco_removal
+            rm -f tmp_prefixes.txt
+        done
+        ;;
+    2)
+        echo "set apply-groups TWITTER-BLOCK" >> "$output_file"
+        echo "# Commands to remove Juniper routes" >> "$output_file"
+        add_juniper_removal
+        ;;
+    3)
+        echo "# Commands to remove Nokia routes" >> "$output_file"
+        for asn in "${asns[@]}"; do
+            bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+            add_nokia_removal
+            rm -f tmp_prefixes.txt
+        done
+        ;;
+    4)
+        echo "# Commands to remove Huawei routes" >> "$output_file"
+        for asn in "${asns[@]}"; do
+            bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+            add_huawei_removal
+            rm -f tmp_prefixes.txt
+        done
+        ;;
+    5)
+        echo "# Commands to remove Mikrotik routes" >> "$output_file"
+        for asn in "${asns[@]}"; do
+            bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+            add_mikrotik_removal
+            rm -f tmp_prefixes.txt
+        done
+        ;;
+    6)
+        echo "# Commands to remove VyOS routes" >> "$output_file"
+        for asn in "${asns[@]}"; do
+            bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+            add_vyos_removal
+            rm -f tmp_prefixes.txt
+        done
+        ;;
+esac
 
 echo "Rotas estáticas geradas em $output_file"
 cat "$output_file"
