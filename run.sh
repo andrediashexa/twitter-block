@@ -29,6 +29,7 @@ generate_juniper_routes() {
     while read -r prefix; do
         echo "set groups TWITTER-BLOCK routing-options static route $prefix discard" >> "$output_file"
     done < tmp_prefixes.txt
+    echo "set apply-groups TWITTER-BLOCK" >> "$output_file" # Adiciona apply-groups para Juniper
 }
 
 generate_nokia_routes() {
