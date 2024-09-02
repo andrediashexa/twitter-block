@@ -88,7 +88,7 @@ add_nokia_removal() {
 add_huawei_removal() {
     echo "# Commands to remove Huawei routes" >> "$output_file"
     while read -r prefix; do
-        echo "no ip route-static $prefix NULL0" >> "$output_file"
+        echo "undo ip route-static $prefix NULL0" >> "$output_file"
     done < tmp_prefixes.txt
 }
 
