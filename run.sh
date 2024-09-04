@@ -27,9 +27,8 @@ generate_cisco_routes() {
 
 generate_juniper_routes() {
     while read -r prefix; do
-        echo "set groups TWITTER-BLOCK routing-options static route $prefix discard" >> "$output_file"
+        echo "set groups $juniper_group_name routing-options static route $prefix discard" >> "$output_file"
     done < tmp_prefixes.txt
-    echo "set apply-groups TWITTER-BLOCK" >> "$output_file" # Adiciona apply-groups para Juniper
 }
 
 generate_nokia_routes() {
@@ -65,8 +64,11 @@ add_cisco_removal() {
 }
 
 add_juniper_removal() {
-    echo "delete groups TWITTER-BLOCK" >> "$remove_file"
-    echo "delete apply-groups TWITTER-BLOCK" >> "$remove_file"
+    # Adiciona os comandos de remoção para Juniper apenas uma vez
+    if ! grep -q "delete groups $juniper_group_name" "$remove_file"; then
+        echo "delete groups $juniper_group_name" >> "$remove_file"
+        echo "delete apply-groups $juniper_group_name" >> "$remove_file"
+    fi
 }
 
 add_nokia_removal() {
@@ -79,6 +81,7 @@ add_huawei_removal() {
     while read -r prefix; do
         echo "undo ip route-static $prefix NULL0" >> "$remove_file"
     done < tmp_prefixes.txt
+    $SED_INLINE 's/\// /g' "$remove_file"
 }
 
 add_mikrotik_removal() {
@@ -93,11 +96,11 @@ add_vyos_removal() {
     done < tmp_prefixes.txt
 }
 
-# Lista de ASNs
-asns=("63179" "54888" "35995" "13414")
-
 # Detecta o sistema operacional
 detect_os
+
+# Solicita a lista de ASNs ao usuário
+read -p "Insira a lista de ASNs, separados por espaço: " -a asns
 
 # Solicita o tipo de dispositivo
 echo "Selecione o fabricante para gerar as rotas estáticas:"
@@ -108,6 +111,11 @@ echo "4 - Huawei"
 echo "5 - Mikrotik"
 echo "6 - VyOS"
 read -p "Escolha uma opção (1-6): " choice
+
+# Se o usuário escolher Juniper, solicita o nome do grupo
+if [ "$choice" -eq 2 ]; then
+    read -p "Insira o nome do grupo para Juniper: " juniper_group_name
+fi
 
 # Define os arquivos de saída
 output_file="static_routes.txt"
@@ -152,6 +160,11 @@ for asn in "${asns[@]}"; do
     $SED_INLINE "s/ip prefix-list prefix_list_${asn} permit//g" "$output_file"
 done
 
+# Adiciona apply-groups para Juniper apenas uma vez no final
+if [ "$choice" -eq 2 ]; then
+    echo "set apply-groups $juniper_group_name" >> "$output_file"
+fi
+
 # Exibe o conteúdo do arquivo de rotas estáticas
 echo "Rotas estáticas geradas em $output_file"
 cat "$output_file"
@@ -160,35 +173,57 @@ cat "$output_file"
 read -p "Deseja gerar os comandos de remoção para o fabricante selecionado? (s/n): " generate_removal
 
 if [[ $generate_removal == "s" || $generate_removal == "S" ]]; then
-    # Cria o arquivo de remoção
+    # Cria o arquivo de remoção e adiciona o cabeçalho correspondente uma vez
     > "$remove_file"
-    
     case $choice in
         1)
             echo "# Commands to remove Cisco routes" >> "$remove_file"
-            add_cisco_removal
             ;;
         2)
             echo "# Commands to remove Juniper routes" >> "$remove_file"
-            add_juniper_removal
             ;;
         3)
             echo "# Commands to remove Nokia routes" >> "$remove_file"
-            add_nokia_removal
             ;;
         4)
             echo "# Commands to remove Huawei routes" >> "$remove_file"
-            add_huawei_removal
             ;;
         5)
             echo "# Commands to remove Mikrotik routes" >> "$remove_file"
-            add_mikrotik_removal
             ;;
         6)
             echo "# Commands to remove VyOS routes" >> "$remove_file"
-            add_vyos_removal
             ;;
     esac
+
+    for asn in "${asns[@]}"; do
+        # Obtém os prefixos usando bgpq4
+        bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+
+        case $choice in
+            1)
+                add_cisco_removal
+                ;;
+            2)
+                add_juniper_removal
+                ;;
+            3)
+                add_nokia_removal
+                ;;
+            4)
+                add_huawei_removal
+                ;;
+            5)
+                add_mikrotik_removal
+                ;;
+            6)
+                add_vyos_removal
+                ;;
+        esac
+
+        $SED_INLINE "s/ip prefix-list prefix_list_${asn} permit//g" "$remove_file"
+
+    done
 
     echo "Comandos de remoção gerados em $remove_file"
     cat "$remove_file"
