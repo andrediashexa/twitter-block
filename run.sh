@@ -65,8 +65,11 @@ add_cisco_removal() {
 }
 
 add_juniper_removal() {
-    echo "delete groups TWITTER-BLOCK" >> "$remove_file"
-    echo "delete apply-groups TWITTER-BLOCK" >> "$remove_file"
+    # Adiciona os comandos de remoção para Juniper apenas uma vez
+    if ! grep -q "delete groups TWITTER-BLOCK" "$remove_file"; then
+        echo "delete groups TWITTER-BLOCK" >> "$remove_file"
+        echo "delete apply-groups TWITTER-BLOCK" >> "$remove_file"
+    fi
 }
 
 add_nokia_removal() {
@@ -79,6 +82,7 @@ add_huawei_removal() {
     while read -r prefix; do
         echo "undo ip route-static $prefix NULL0" >> "$remove_file"
     done < tmp_prefixes.txt
+    $SED_INLINE 's/\// /g' "$remove_file"
 }
 
 add_mikrotik_removal() {
@@ -160,35 +164,57 @@ cat "$output_file"
 read -p "Deseja gerar os comandos de remoção para o fabricante selecionado? (s/n): " generate_removal
 
 if [[ $generate_removal == "s" || $generate_removal == "S" ]]; then
-    # Cria o arquivo de remoção
+    # Cria o arquivo de remoção e adiciona o cabeçalho correspondente uma vez
     > "$remove_file"
-    
     case $choice in
         1)
             echo "# Commands to remove Cisco routes" >> "$remove_file"
-            add_cisco_removal
             ;;
         2)
             echo "# Commands to remove Juniper routes" >> "$remove_file"
-            add_juniper_removal
             ;;
         3)
             echo "# Commands to remove Nokia routes" >> "$remove_file"
-            add_nokia_removal
             ;;
         4)
             echo "# Commands to remove Huawei routes" >> "$remove_file"
-            add_huawei_removal
             ;;
         5)
             echo "# Commands to remove Mikrotik routes" >> "$remove_file"
-            add_mikrotik_removal
             ;;
         6)
             echo "# Commands to remove VyOS routes" >> "$remove_file"
-            add_vyos_removal
             ;;
     esac
+
+    for asn in "${asns[@]}"; do
+        # Obtém os prefixos usando bgpq4
+        bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes.txt
+
+        case $choice in
+            1)
+                add_cisco_removal
+                ;;
+            2)
+                add_juniper_removal
+                ;;
+            3)
+                add_nokia_removal
+                ;;
+            4)
+                add_huawei_removal
+                ;;
+            5)
+                add_mikrotik_removal
+                ;;
+            6)
+                add_vyos_removal
+                ;;
+        esac
+
+        $SED_INLINE "s/ip prefix-list prefix_list_${asn} permit//g" "$remove_file"
+
+    done
 
     echo "Comandos de remoção gerados em $remove_file"
     cat "$remove_file"
