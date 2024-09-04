@@ -27,9 +27,8 @@ generate_cisco_routes() {
 
 generate_juniper_routes() {
     while read -r prefix; do
-        echo "set groups TWITTER-BLOCK routing-options static route $prefix discard" >> "$output_file"
+        echo "set groups $juniper_group_name routing-options static route $prefix discard" >> "$output_file"
     done < tmp_prefixes.txt
-    echo "set apply-groups TWITTER-BLOCK" >> "$output_file" # Adiciona apply-groups para Juniper
 }
 
 generate_nokia_routes() {
@@ -66,9 +65,9 @@ add_cisco_removal() {
 
 add_juniper_removal() {
     # Adiciona os comandos de remoção para Juniper apenas uma vez
-    if ! grep -q "delete groups TWITTER-BLOCK" "$remove_file"; then
-        echo "delete groups TWITTER-BLOCK" >> "$remove_file"
-        echo "delete apply-groups TWITTER-BLOCK" >> "$remove_file"
+    if ! grep -q "delete groups $juniper_group_name" "$remove_file"; then
+        echo "delete groups $juniper_group_name" >> "$remove_file"
+        echo "delete apply-groups $juniper_group_name" >> "$remove_file"
     fi
 }
 
@@ -97,11 +96,11 @@ add_vyos_removal() {
     done < tmp_prefixes.txt
 }
 
-# Lista de ASNs
-asns=("63179" "54888" "35995" "13414")
-
 # Detecta o sistema operacional
 detect_os
+
+# Solicita a lista de ASNs ao usuário
+read -p "Insira a lista de ASNs, separados por espaço: " -a asns
 
 # Solicita o tipo de dispositivo
 echo "Selecione o fabricante para gerar as rotas estáticas:"
@@ -112,6 +111,11 @@ echo "4 - Huawei"
 echo "5 - Mikrotik"
 echo "6 - VyOS"
 read -p "Escolha uma opção (1-6): " choice
+
+# Se o usuário escolher Juniper, solicita o nome do grupo
+if [ "$choice" -eq 2 ]; then
+    read -p "Insira o nome do grupo para Juniper: " juniper_group_name
+fi
 
 # Define os arquivos de saída
 output_file="static_routes.txt"
@@ -155,6 +159,11 @@ for asn in "${asns[@]}"; do
     # Remove as linhas específicas ao ASN atual do arquivo de saída
     $SED_INLINE "s/ip prefix-list prefix_list_${asn} permit//g" "$output_file"
 done
+
+# Adiciona apply-groups para Juniper apenas uma vez no final
+if [ "$choice" -eq 2 ]; then
+    echo "set apply-groups $juniper_group_name" >> "$output_file"
+fi
 
 # Exibe o conteúdo do arquivo de rotas estáticas
 echo "Rotas estáticas geradas em $output_file"
