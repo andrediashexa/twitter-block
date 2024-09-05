@@ -1,7 +1,37 @@
 #!/bin/bash
 
 unbound() {
-    echo "Em desenvolvimento"
+        echo "Adicione o abaixo no seu arquivo de configuração do unbound:
+        "
+        echo "include: /etc/unbound/blacklist.conf"
+
+            echo "Quando estiver pronto para passar para proxima etapa, pressione enter"
+
+        read
+
+        echo "Cole todos os dominios na proxima tela, apos isso utilize ctrl+x para salvar"
+        sleep 3
+        nano /tmp/domain.tmp
+        clear
+
+        while read domain;
+            do
+                echo local-zone: "$domain" always_refuse
+            done < /tmp/domain.tmp 
+
+        echo ""
+
+        rm -rf /tmp/domain.tmp
+
+        echo "Cole todo o acima no arquivo /etc/unbound/blacklist.conf"
+        echo "Esse arquivo voce precisará criar!"
+        echo "
+        
+        
+        
+        "
+
+
 }
 
 bind9() {
