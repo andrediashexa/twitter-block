@@ -1,4 +1,11 @@
-Este script é utilizado para gerar rotas estáticas com o propósito de bloquear prefixos IP específicos. Foi desenvolvido para ser compatível com sistemas operacionais Linux e macOS.
+Este script é utilizado para auxiliar nos bloqueios solicitados para o X / Twitter. Foi desenvolvido para ser compatível com sistemas operacionais Linux e macOS.
+
+## Funções
+
+- **Rotas Estaticas IPv4 referente aos ASNs do X;**
+- **Rotas Estaticas IPv6 referente aos ASNs do X;**
+- **Entradas em DNS Recursivo (Unbound e Bind9)**
+
 
 ## Pré-requisitos
 
@@ -6,17 +13,18 @@ Para que o script funcione corretamente, é necessário ter as seguintes depend�
 
 - **BGPQ4**
 - **IPCALC**
+- **SIPCALC** (Devido ao IPv6)
 
 ## Lista de fabricantes e sistemas operacionais suportados
 
-1. Cisco
-2. Juniper
-3. Nokia
-4. Huawei
-5. Mikrotik
-6. VyOS
-7. Linux
-8. FreeBSD
+1. Cisco;
+2. Juniper;
+3. Nokia;
+4. Huawei;
+5. Mikrotik;
+6. VyOS;
+7. Linux;
+8. FreeBSD.
 
 **Observação:** O script foi testado nos fabricantes Cisco, Juniper e Huawei. Os demais fabricantes e sistemas operacionais listados ainda não foram testados.
 
@@ -26,7 +34,7 @@ Para que o script funcione corretamente, é necessário ter as seguintes depend�
 
    Para Linux:
    ```bash
-   sudo apt update && sudo apt install git bgpq4 ipcalc -y
+   sudo apt update && sudo apt install git bgpq4 ipcalc sipcalc -y
    ```
 
    Para macOS:
