@@ -5,7 +5,7 @@ Este script é utilizado para auxiliar nos bloqueios solicitados para o X / Twit
 - **Rotas Estaticas IPv4 referente aos ASNs do X;**
 - **Rotas Estaticas IPv6 referente aos ASNs do X;**
 - **Entradas em DNS Recursivo (Unbound e Bind9);**
-- **Prefix List baseada nos ASNs do X. Função para diversos vendors.**
+- **Prefix List baseada nos ASNs do X. Função para diversos [**vendors**](https://github.com/andrediashexa/twitter-block?tab=readme-ov-file#lista-de-vendors-suportados-para-prefix-list-mesmos-que-o-bgpq4-suporta).**
 
 
 ## Pré-requisitos
