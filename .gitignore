@@ -1,3 +1,6 @@
 remove_routes.txt
 static_routes_ipv4.txt
 static_routes_ipv6.txt
+prefixes.txt
+twitter-domains.txt
+full-prefixes-v6.txt

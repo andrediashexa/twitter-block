@@ -4,10 +4,10 @@
 detect_os() {
     case "$(uname -s)" in
         Darwin)
-            SED_INLINE="sed -i ''"  # macOS
+            SED_INLINE="sed ''"  # macOS
             ;;
         Linux)
-            SED_INLINE="sed -i"     # Linux
+            SED_INLINE="sed"     # Linux
             ;;
         *)
             echo "Sistema operacional não suportado!"
@@ -18,7 +18,7 @@ detect_os() {
 
 # Função para verificar dependências necessárias
 check_dependencies() {
-    for cmd in bgpq4 ipcalc; do
+    for cmd in bgpq4 ipcalc sipcalc; do
         if ! command -v $cmd &> /dev/null; then
             echo "Erro: O comando '$cmd' não está instalado."
             exit 1
@@ -30,83 +30,83 @@ check_dependencies() {
 generate_cisco_routes() {
     while read -r prefix; do
         echo "ip route $prefix Null0" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "ipv6 route $prefix Null0" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_juniper_routes() {
     while read -r prefix; do
         echo "set routing-options static route $prefix discard" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "set routing-options rib inet6.0 static route $prefix discard" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_nokia_routes() {
     while read -r prefix; do
         echo "configure router static-route $prefix blackhole" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "configure router static-route ipv6 $prefix blackhole" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_huawei_routes() {
     while read -r prefix; do
         echo "ip route-static $prefix NULL0" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "ipv6 route-static $prefix NULL0" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_mikrotik_routes() {
     while read -r prefix; do
         echo "/ip route add dst-address=$prefix type=blackhole" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "/ipv6 route add dst-address=$prefix type=blackhole" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_vyos_routes() {
     while read -r prefix; do
         echo "set protocols static route $prefix blackhole" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "set protocols static route6 $prefix blackhole" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_linux_routes() {
     while read -r prefix; do
         echo "ip route add blackhole $prefix" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "ip -6 route add blackhole $prefix" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 generate_freebsd_routes() {
     while read -r prefix; do
         echo "route add -net $prefix -blackhole" >> "$output_file_ipv4"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "route add -inet6 $prefix -blackhole" >> "$output_file_ipv6"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 # Funções para adicionar comandos de remoção de rotas
 add_cisco_removal() {
     while read -r prefix; do
         echo "no ip route $prefix Null0" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "no ipv6 route $prefix Null0" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_juniper_removal() {
@@ -117,55 +117,55 @@ add_juniper_removal() {
 add_nokia_removal() {
     while read -r prefix; do
         echo "no configure router static-route $prefix blackhole" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "no configure router static-route ipv6 $prefix blackhole" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_huawei_removal() {
     while read -r prefix; do
         echo "undo ip route-static $prefix NULL0" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "undo ipv6 route-static $prefix NULL0" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_mikrotik_removal() {
     while read -r prefix; do
         echo "/ip route remove dst-address=$prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "/ipv6 route remove dst-address=$prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_vyos_removal() {
     while read -r prefix; do
         echo "delete protocols static route $prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "delete protocols static route6 $prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_linux_removal() {
     while read -r prefix; do
         echo "ip route del blackhole $prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "ip -6 route del blackhole $prefix" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 add_freebsd_removal() {
     while read -r prefix; do
         echo "route delete -net $prefix -blackhole" >> "$remove_file"
-    done < tmp_prefixes_ipv4.txt
+    done < $prefixes
     while read -r prefix; do
         echo "route delete -inet6 $prefix -blackhole" >> "$remove_file"
-    done < tmp_prefixes_ipv6.txt
+    done < $prefixesv6
 }
 
 # Função para exibir a barra de progresso
@@ -183,7 +183,7 @@ show_progress() {
 
 # Configuração de limpeza com trap
 cleanup() {
-    rm -f tmp_prefixes_ipv4.txt tmp_prefixes_ipv6.txt
+    rm -f $prefixes $prefixesv6
 }
 trap cleanup EXIT
 
@@ -213,7 +213,10 @@ read -p "Escolha uma opção (1-8): " choice
 output_file_ipv4="static_routes_ipv4.txt"
 output_file_ipv6="static_routes_ipv6.txt"
 remove_file="remove_routes.txt"
-rm -f "$output_file_ipv4" "$output_file_ipv6" "$remove_file"
+prefixes="prefixes.txt"
+prefixesv6="prefixes-v6.txt"
+fullprefixesv6="full-prefixes-v6.txt"
+rm -rf "$output_file_ipv4" "$output_file_ipv6" "$remove_file" "$prefixes" "$prefixesv6" "$fullprefixesv6"
 
 # Itera sobre cada ASN para gerar os comandos de roteamento
 total_asns=${#asns[@]}
@@ -221,8 +224,14 @@ for i in "${!asns[@]}"; do
     asn="${asns[$i]}"
 
     # Obtém os prefixos IPv4 e IPv6 e filtra para remover prefixos indesejados
-    bgpq4 -4 -m 24 -l prefix_list_$asn AS$asn | grep -v '^no ip prefix-list' > tmp_prefixes_ipv4.txt
-    bgpq4 -6 -m 48 -l prefix_list_$asn AS$asn | grep -v '^no ipv6 prefix-list' > tmp_prefixes_ipv6.txt
+    bgpq4 -4 -l "" -m 24 AS$asn | grep -v '^no ip prefix-list' | $SED_INLINE 's/ip prefix-list .* permit //g' >> $prefixes
+    bgpq4 -6 -m 48 -l "" AS$asn | grep -v '^no ipv6 prefix-list' | grep -v ! | grep -v deny |sed 's/ipv6 prefix-list .* permit //g' >> $fullprefixesv6
+    
+    # Quebra os prefixos ipv6 recebido pelo BGPQ4 em /40
+    while read prefixeslistv6;
+    do
+        sipcalc $prefixeslistv6 -S /40 | awk '/Network/ {print $3}' | sed 's/:0000:0000:0000:0000:0000/::/g' | sed 's/::::/::/g' | awk '{print $1"/40"}'  >> $prefixesv6
+    done < $fullprefixesv6
 
     # Gera as rotas com base na escolha
     case $choice in
@@ -237,10 +246,6 @@ for i in "${!asns[@]}"; do
         voltar) exit 1 ;;
         *) echo "Opção inválida!" && exit 1 ;;
     esac
-
-    # Remove as linhas específicas ao ASN atual do arquivo de saída
-    $SED_INLINE "s/ip prefix-list prefix_list_${asn} permit//g" "$output_file_ipv4"
-    $SED_INLINE "s/ipv6 prefix-list prefix_list_${asn} permit//g" "$output_file_ipv6"
 
     # Atualiza a barra de progresso
     show_progress $((i + 1)) $total_asns
@@ -271,4 +276,4 @@ if [[ $generate_removal == "s" || $generate_removal == "S" ]]; then
 fi
 
 # Remove o arquivo temporário
-rm -f tmp_prefixes_ipv4.txt tmp_prefixes_ipv6.txt
+rm -f $prefixes $prefixesv6
