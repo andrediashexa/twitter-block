@@ -16,7 +16,7 @@ Para que o script funcione corretamente, é necessário ter as seguintes depend�
 - **IPCALC**
 - **SIPCALC** (Devido ao IPv6)
 
-## Lista de fabricantes e sistemas operacionais suportados
+## Lista de fabricantes e sistemas operacionais suportados para blackhole:
 
 1. Cisco;
 2. Juniper;
@@ -26,6 +26,24 @@ Para que o script funcione corretamente, é necessário ter as seguintes depend�
 6. VyOS;
 7. Linux;
 8. FreeBSD.
+
+## Lista de vendors suportados para prefix-list (Mesmos que o BGPQ4 suporta):
+
+1. Huawei;
+2. Huawei (XPL);
+3. Cisco IOS-XE;
+4. Cisco IOS-XR;
+5. Juniper (Route-Filter);
+6. Mikrotik v6;
+7. Mikrotik v7;
+8. Nokia MD-CLI;
+9. Nokia SR-LINUX;
+10. Nokia SROS Classic;
+11. OpenBGPD;
+12. BIRD;
+13. Arista;
+14. JSON Format.
+
 
 **Observação:** O script foi testado nos fabricantes Cisco, Juniper e Huawei. Os demais fabricantes e sistemas operacionais listados ainda não foram testados.
 
