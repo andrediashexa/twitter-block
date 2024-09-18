@@ -1,5 +1,13 @@
 Este script é utilizado para auxiliar nos bloqueios solicitados para o X / Twitter. Foi desenvolvido para ser compatível com sistemas operacionais Linux e macOS.
 
+## Disclaimer
+
+Existem controvérsias sobre a extensão da aplicação desses bloqueios e algumas pessoas entendem que a aplicação de blackhole ou filtros BGP dos prefixos do ASN através de rotas estáticas ou prefix list vai além do que foi solicitado para bloqueio da aplicação/conteúdo.
+
+O usuário deve avaliar cuidadosamente com seus próprios meios os métodos de bloqueio pertinentes e que considere suficientes para atender ao que foi solicitado, levando em consideração o impacto sobre outros serviços e a eficácia do bloqueio.
+
+A responsabilidade pelo uso deste script e suas consequências é inteiramente do administrador da rede e/ou do responsável pela operação.
+
 ## Funções
 
 - **Rotas Estaticas IPv4 referente aos ASNs do X;**
