@@ -2,6 +2,8 @@
 
 chmod +x ./*
 
+cat disclaimer.txt
+
 while true; do
     echo "Escolha uma opção:"
     echo "1 - Gerar rotas de Blackhole"
