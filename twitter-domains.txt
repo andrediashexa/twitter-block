@@ -5,3 +5,8 @@ twimg.com
 twttr.net
 twttr.com
 ads-twitter.com
+twtrdnstest.net
+t.co
+x.com.cdn.cloudflare.net
+t.co.cdn.cloudflare.net
+twitter.com.cdn.cloudflare.net
