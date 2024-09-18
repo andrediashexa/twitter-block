@@ -6,3 +6,4 @@ O usuário deve avaliar cuidadosamente com seus próprios meios os métodos de b
 
 A responsabilidade pelo uso deste script e suas consequências é inteiramente do administrador da rede e/ou do responsável pela operação.
 ========================================================================================================================================
+
