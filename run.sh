@@ -2,6 +2,7 @@
 
 chmod +x ./*
 
+clear
 cat disclaimer.txt
 
 while true; do
